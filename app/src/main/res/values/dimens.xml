@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="small_padding_8dp">8dp</dimen>
+    <dimen name="small_margin_4dp">4dp</dimen>
+    <dimen name="large_margin_16dp">16dp</dimen>
+    <dimen name="med_margin_8dp">8dp</dimen>
+    <dimen name="small_text_16sp">16sp</dimen>
+    <dimen name="small_text_20sp">20sp</dimen>
+    <dimen name="large_text_28sp">28sp</dimen>
+    <dimen name="standard_140">140dp</dimen>
+    <dimen name="standard_70">70dp</dimen>
+    <dimen name="standard_90">90dp</dimen>
+    <dimen name="standard_45">45dp</dimen>
+    <dimen name="margin_default_32dp">32dp</dimen>
+    <dimen name="default_title_width">265dp</dimen>
+    <dimen name="title_size_26sp">26sp</dimen>
+    <dimen name="quantity_width">40dp</dimen>
+    <dimen name="display_title_size">38sp</dimen>
+    <dimen name="default_text_size_24">24sp</dimen>
+    <dimen name="background_image">155dp</dimen>
+    <dimen name="standard_75_dimen">75dp</dimen>
+    <dimen name="margin_large_44">44dp</dimen>
+    <dimen name="standard_50_size">50dp</dimen>
+    <dimen name="main_fab_size">56dp</dimen>
+</resources>
