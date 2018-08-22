@@ -1,12 +1,15 @@
 package com.thebaileybrew.nowloading.customobjects;
 
 import android.graphics.Canvas;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import com.thebaileybrew.nowloading.database.InventoryCursorAdapter;
 import com.thebaileybrew.nowloading.interfaces.RecyclerItemTouchListener;
+
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+
+import static androidx.recyclerview.widget.ItemTouchHelper.Callback.getDefaultUIUtil;
 
 public class RecyclerItemTouchHelpListener extends ItemTouchHelper.SimpleCallback {
     private final RecyclerItemTouchListener itemTouchHelpListener;

@@ -4,11 +4,12 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
 import com.thebaileybrew.nowloading.database.InventoryContract;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class DisplayDetailsActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView gameNameText;

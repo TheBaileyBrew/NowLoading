@@ -3,9 +3,7 @@ package com.thebaileybrew.nowloading.database;
 import android.content.Context;
 import android.database.Cursor;
 import android.provider.BaseColumns;
-import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +13,9 @@ import android.widget.TextView;
 
 import com.thebaileybrew.nowloading.R;
 import com.thebaileybrew.nowloading.interfaces.onClickInterface;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class InventoryCursorAdapter extends RecyclerView.Adapter<InventoryCursorAdapter.ViewHolder> {
 

@@ -13,10 +13,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputEditText;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -35,6 +31,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.thebaileybrew.nowloading.customobjects.NumberTextWatcher;
@@ -46,6 +43,10 @@ import com.thebaileybrew.nowloading.queryelements.upcquery.upcLoader;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
 
 public class AddActivity extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks {
     private static final String TAG = AddActivity.class.getSimpleName();
@@ -568,16 +569,22 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             }
             if (!isNetworkAvailable()) {
                 Toast.makeText(this, "Cannot query network", Toast.LENGTH_SHORT).show();
+            } else {
+                if (newData != null) {
+                    upc currentGame = newData.get(0);
+                    String gameNameDetails = currentGame.getUpcGameName();
+                    String gameUPCDetails = currentGame.getUpcCode();
+                    String gameImageDetails = currentGame.getUpcGameImage();
+                    String gamePriceDetails = currentGame.getUpcGameLowPrice();
+                    mGameNameEditText.setText(gameNameDetails);
+                    mBarcodeEditText.setText(gameUPCDetails);
+                    mGamePriceEditText.setText(gamePriceDetails);
+                    mQuantityEditText.setText(increaseQuantity());
+                } else {
+                    Toast.makeText(this, "Barcode returns zero results", Toast.LENGTH_SHORT).show();
+                    mBarcodeEditText.setText("");
+                }
             }
-            upc currentGame = newData.get(0);
-            String gameNameDetails = currentGame.getUpcGameName();
-            String gameUPCDetails = currentGame.getUpcCode();
-            String gameImageDetails = currentGame.getUpcGameImage();
-            String gamePriceDetails = currentGame.getUpcGameLowPrice();
-            mGameNameEditText.setText(gameNameDetails);
-            mBarcodeEditText.setText(gameUPCDetails);
-            mGamePriceEditText.setText(gamePriceDetails);
-            mQuantityEditText.setText(increaseQuantity());
         } else if (id == UPDATE_LOADER_ID) {
             Cursor cursorData = (Cursor) data;
             if (cursorData == null || cursorData.getCount() < 1){

@@ -6,16 +6,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,6 +23,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.thebaileybrew.nowloading.customobjects.RecyclerItemTouchHelpListener;
 import com.thebaileybrew.nowloading.database.InventoryContract;
 import com.thebaileybrew.nowloading.database.InventoryCursorAdapter;
@@ -36,6 +32,13 @@ import com.thebaileybrew.nowloading.interfaces.onClickInterface;
 
 
 import java.util.Random;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static android.view.View.VISIBLE;
 
@@ -56,6 +59,9 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
     private RecyclerView recyclerView;
     private InventoryCursorAdapter inventoryCursorAdapter;
     private ItemTouchHelper.SimpleCallback itemTouchCallBack;
+    private SharedPreferences hasData;
+    private SharedPreferences.Editor hasDataEditor;
+    private Cursor cursor;
 
 
     @Override
@@ -63,7 +69,11 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
         noDataLayout = findViewById(R.id.no_database_data);
+        hasData = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         initFabs();
+        if(!hasData.contains("data")) {
+            noDataLayout.setVisibility(View.INVISIBLE);
+        }
         coordinatorLayout = findViewById(R.id.coordinator_layout);
         animationFadeOut = AnimationUtils.loadAnimation(this, R.anim.fadeout);
         animationFadeIn = AnimationUtils.loadAnimation(this, R.anim.fadein);
@@ -86,10 +96,17 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
             InventoryContract.InventoryEntry.GAME_SALE_PRICE,
             InventoryContract.InventoryEntry.GAME_SUGGESTED_PRICE,
             InventoryContract.InventoryEntry.GAME_CONDITION};
-        Cursor cursor = getContentResolver().query(
+        cursor = getContentResolver().query(
                 InventoryContract.InventoryEntry.CONTENT_URI, projection,
                 null, null, null, null);
-        if ((cursor != null ? cursor.getCount() : 0) > 0) {
+        updateSharedPrefs(cursor);
+
+        /* Checks SharedPreferences to determine if data available
+         * This was a fix for returning to Catalog from DetailsDisplay & EditorActivity
+         * If SharedPref does contain "data" then animation will stay invisible
+         * If SharedPref does NOT contain "data" then animation will fade in and be visible until "data" exists
+         */
+        if (!hasData.contains("data")) {
             final ImageView bg_image = findViewById(R.id.background_image_empty_layout);
             final Animation bg_animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_and_fade);
 
@@ -112,9 +129,9 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
         } else {
             noDataLayout.setVisibility(VISIBLE);
             noDataLayout.startAnimation(animationFadeIn);
-            final ImageView bg_image = findViewById(R.id.background_image_empty_layout);
-            final Animation bg_animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_and_rotate);
-            bg_image.startAnimation(bg_animation);
+            final ImageView bg_image2 = findViewById(R.id.background_image_empty_layout);
+            final Animation bg_animation2 = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_and_rotate);
+            bg_image2.startAnimation(bg_animation2);
         }
         recyclerView = findViewById(R.id.recyclerView);
 
@@ -189,6 +206,19 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
 
         //Run the animation loader
         runLayoutAnimation(recyclerView);
+    }
+
+    //Declares how to handle the opening animation based on the cursor returned on query
+    private void updateSharedPrefs(Cursor cursor) {
+        if ((cursor != null ? cursor.getCount() : 0) > 0) {
+            hasDataEditor = hasData.edit();
+            hasDataEditor.remove("data");
+            hasDataEditor.apply();
+        } else {
+            hasDataEditor = hasData.edit();
+            hasDataEditor.putString("data", "data");
+            hasDataEditor.apply();
+        }
     }
 
     private void runLayoutAnimation(RecyclerView recyclerView) {

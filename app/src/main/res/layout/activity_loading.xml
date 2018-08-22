@@ -35,7 +35,7 @@
         android:indeterminate="true"
         android:scaleX="4"
         android:layout_marginBottom="@dimen/margin_default_32dp"
-        android:indeterminateTint="@color/colorPrimaryDark"
+        android:indeterminateTint="@color/colorAccentRed"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

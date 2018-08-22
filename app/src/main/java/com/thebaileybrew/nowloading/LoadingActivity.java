@@ -3,7 +3,6 @@ package com.thebaileybrew.nowloading;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -12,6 +11,8 @@ import android.widget.Toast;
 
 import com.thebaileybrew.nowloading.database.InventoryContract;
 import com.thebaileybrew.nowloading.queryelements.gamesquery.QueryGameUtils;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import static android.view.View.VISIBLE;
 
