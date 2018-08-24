@@ -33,6 +33,25 @@
         android:textSize="@dimen/small_text_20sp"
         android:textStyle="bold"
         tools:text="999"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sell_this_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+        app:layout_constraintTop_toBottomOf="@id/item_qty_view"
+        app:layout_constraintRight_toRightOf="parent"
+        app:icon="@drawable/ic_sell"
+        app:iconTint="@color/colorAccentRed"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/colorAccentRed"
+        android:insetLeft="@dimen/small_margin_4dp"
+        android:insetRight="@dimen/small_margin_4dp"
+        android:layout_marginTop="@dimen/small_margin_4dp"
+        android:layout_marginEnd="@dimen/small_margin_4dp"
+        android:elevation="4dp"
+        android:textColor="@color/colorAccentRed"
+        android:textSize="@dimen/small_text_20sp"
+        android:text="SELL ITEM"/>
     <TextView
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toLeftOf="@id/item_qty_view"
@@ -50,7 +69,7 @@
         android:layout_marginTop="@dimen/small_margin_4dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/small_text_20sp"
+        android:textSize="@dimen/small_text_16sp"
         android:text="@string/suggested_price"/>
     <TextView
         android:id="@+id/item_price_view"
@@ -60,7 +79,7 @@
         android:layout_marginStart="@dimen/med_margin_8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/small_text_20sp"
+        android:textSize="@dimen/small_text_16sp"
         tools:text="5"/>
     <RelativeLayout
         android:id="@+id/view_object_contraint"

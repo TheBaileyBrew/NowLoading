@@ -3,6 +3,7 @@
     <color name="colorPrimary">#1b1b1b</color>
     <color name="colorPrimaryDark">#00237e</color>
     <color name="colorAccent">#3765DB</color>
+    <color name="colorAccentFadeOut">#553765DB</color>
     <color name="colorAccentRed">#db373c</color>
 
     <color name="gradient_start">#FFFFFF</color>

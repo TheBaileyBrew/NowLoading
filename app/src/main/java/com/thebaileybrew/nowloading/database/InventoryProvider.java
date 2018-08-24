@@ -18,9 +18,6 @@ public class InventoryProvider extends ContentProvider {
     private InventoryDbHelper mDbHelper;
     private static final int INVENTORY = 100;
     private static final int INVENTORY_ID = 101;
-    private static final int GAME = 200;
-    private static final int GAME_ID = 201;
-    private static final int GAME_NAME = 202;
 
     @Override
     public boolean onCreate() {
@@ -33,8 +30,6 @@ public class InventoryProvider extends ContentProvider {
         UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(content, InventoryContract.PATH_INVENTORY, INVENTORY);
         sUriMatcher.addURI(content, InventoryContract.PATH_INVENTORY + "/#", INVENTORY_ID);
-        sUriMatcher.addURI(content, InventoryContract.PATH_GAMES, GAME);
-        sUriMatcher.addURI(content, InventoryContract.PATH_GAMES + "/#", GAME_ID);
         return sUriMatcher;
     }
 
@@ -46,22 +41,6 @@ public class InventoryProvider extends ContentProvider {
 
         int match = sUriMatcher.match(uri);
         switch(match) {
-            case GAME:
-                cursor = database.query(InventoryContract.GameEntry.TABLE_NAME, projection,
-                        selection,selectionArgs,null,null,sortOrder);
-                break;
-            case GAME_ID:
-                selection = InventoryContract.GameEntry._ID + "=?";
-                selectionArgs = new String [] {String.valueOf(ContentUris.parseId(uri)) };
-                cursor = database.query(InventoryContract.GameEntry.TABLE_NAME, projection,
-                        selection, selectionArgs, null, null, sortOrder);
-                break;
-            case GAME_NAME:
-                selection = InventoryContract.GameEntry.GAME_NAME+ "=?";
-                selectionArgs = new String [] {String.valueOf(ContentUris.parseId(uri)) };
-                cursor = database.query(InventoryContract.GameEntry.TABLE_NAME, projection,
-                        selection, selectionArgs, null, null, sortOrder);
-                break;
             case INVENTORY:
                 cursor = database.query(InventoryContract.InventoryEntry.TABLE_NAME, projection,
                         selection, selectionArgs,null,null,sortOrder);
@@ -93,12 +72,6 @@ public class InventoryProvider extends ContentProvider {
                 return InventoryContract.InventoryEntry.CONTENT_LIST_TYPE;
             case INVENTORY_ID:
                 return InventoryContract.InventoryEntry.CONTENT_ITEM_TYPE;
-            case GAME:
-                return InventoryContract.GameEntry.CONTENT_LIST_TYPE;
-            case GAME_ID:
-                return InventoryContract.GameEntry.CONTENT_ITEM_TYPE;
-            case GAME_NAME:
-                return InventoryContract.GameEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
         }
@@ -112,14 +85,6 @@ public class InventoryProvider extends ContentProvider {
         long _id;
         Uri returnUri;
         switch (match) {
-            case GAME:
-                _id = db.insert(InventoryContract.GameEntry.TABLE_NAME, null, values);
-                if (_id > 0) {
-                    returnUri = ContentUris.withAppendedId(uri,_id);
-                } else {
-                    throw new UnsupportedOperationException("Unable to insert row into: " + uri);
-                }
-                break;
             case INVENTORY:
                 _id = db.insert(InventoryContract.InventoryEntry.TABLE_NAME, null, values);
                 if (_id >= 0) {

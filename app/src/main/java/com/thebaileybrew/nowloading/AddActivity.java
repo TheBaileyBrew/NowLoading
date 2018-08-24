@@ -1,5 +1,6 @@
 package com.thebaileybrew.nowloading;
 
+import android.animation.Animator;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
@@ -19,19 +20,22 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.thebaileybrew.nowloading.customobjects.NumberTextWatcher;
@@ -48,6 +52,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import static android.view.View.VISIBLE;
+
 public class AddActivity extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks {
     private static final String TAG = AddActivity.class.getSimpleName();
     private static final int SCAN_LOADER_ID = 1;
@@ -55,38 +61,53 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
     private final NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
     private final String requestUrl = "https://api.upcitemdb.com/prod/trial/lookup";
 
-    private TextInputEditText mGameNameEditText;
-    private TextInputEditText mGamePriceEditText;
+    private TextInputEditText mGameNameEditText, mGamePriceEditText, mQuantityEditText;
+    private TextInputEditText mSupplierNameEditText, mSupplierPhoneEditText, mSupplierEmailEditText;
+    private TextInputLayout mGameNameLayout, mGamePriceLayout, mQuantityLayout;
+    private TextInputLayout mSupplierNameLayout, mSupplierPhoneLayout, mSupplierEmailLayout;
     private String mSuggestedPrice;
+
+    private FloatingActionButton fabMenuClicker, fabCallClicker, fabEmailClicker;
+    private LinearLayout fabCallLayout, fabEmailLayout;
+    private TextView fabCallText, fabEmailText;
 
     private Spinner mSystemSpinner;
     private int mSystem = InventoryContract.InventoryEntry.SYSTEM_UNKNOWN;
 
-    private EditText mQuantityEditText;
-    private Button mQuantityIncrease;
-    private Button mQuantityDecrease;
+    private TextView soldOutText;
 
-    private RadioGroup mConditionRadioGroup;
-    private RadioButton mConditionPoor;
-    private RadioButton mConditionGood;
-    private RadioButton mConditionGreat;
-    private String mConditionSelected;
+    private Button mQuantityIncrease, mQuantityDecrease;
 
     private Boolean allValidData = false;
     private Boolean validGameName = false; private Boolean validGamePrice = false;
     private Boolean validGameQuantity = false; private Boolean validGameCondition = false;
+    private Boolean validSupplier = false; private Boolean validSupplierPhoneEmail = false;
+    private Boolean emailSupplied = false; private Boolean phoneSupplied = false;
     private Boolean barcodeSearched = false;
+    private Boolean isFabOpen = false;
+
+    private Animation animationFadeIn;
 
     // Flag that signifies if game has been editted (true) or not (false)
     private Boolean mGameDataChanged = false;
     //Field for game details when updating
     private Uri mCurrentGameUri;
 
-    private final View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+    private TextWatcher mTextWatcher = new TextWatcher() {
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
             mGameDataChanged = true;
-            return false;
+            Log.e(TAG, "onTextChanged: Something has changed...");
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
         }
     };
 
@@ -98,30 +119,87 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.activity_add);
         Intent updateIntent = getIntent();
         mCurrentGameUri = updateIntent.getData();
+        initBarcodeScanning();
+        initViews();
+        setupSystemSpinner();
+        setOnTextChangeListeners();
         if(mCurrentGameUri == null) {
-            setTitle("Add A Game");
+            setTitle(getString(R.string.add_a_game));
             invalidateOptionsMenu();
+            hideFAB();
         } else {
-            setTitle("Update This Game");
+            setTitle(getString(R.string.update_a_game));
+            showFAB();
             barcodeSearched = true;
             //Grab the Loader
             getLoaderManager().initLoader(UPDATE_LOADER_ID, null, this);
         }
-        initBarcodeScanning();
-        initViews();
-        setupSystemSpinner();
-        setOnTouchListeners();
+
     }
 
-    private void setOnTouchListeners() {
-        mGameNameEditText.setOnTouchListener(mTouchListener);
-        mGamePriceEditText.setOnTouchListener(mTouchListener);
-        mQuantityIncrease.setOnTouchListener(mTouchListener);
-        mQuantityDecrease.setOnTouchListener(mTouchListener);
-        mBarcodeEditText.setOnTouchListener(mTouchListener);
-        mConditionPoor.setOnTouchListener(mTouchListener);
-        mConditionGood.setOnTouchListener(mTouchListener);
-        mConditionGreat.setOnTouchListener(mTouchListener);
+    private void hideFAB() {
+        fabMenuClicker.setVisibility(View.INVISIBLE);
+    }
+    private void showFAB() {
+        fabMenuClicker.setAnimation(animationFadeIn);
+        fabMenuClicker.setVisibility(VISIBLE);
+    }
+
+    private void setOnTextChangeListeners() {
+        //Listen for Text Changes to Game Name
+        mGameNameEditText.addTextChangedListener(mTextWatcher);
+        //Listen for Text Changes to Game Price
+        mGamePriceEditText.addTextChangedListener(mTextWatcher);
+        //Listen for Text Changes to Game Quantity
+        mQuantityEditText.addTextChangedListener(mTextWatcher);
+        //Listen for Text Changes to Game Supplier
+        mSupplierNameEditText.addTextChangedListener(mTextWatcher);
+        //Listen for Text Changes to Game Supplier Phone
+        mSupplierPhoneEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (mSupplierPhoneEditText.getText().toString().trim().isEmpty()) {
+                    phoneSupplied = false;
+                } else {
+                    phoneSupplied = true;
+                }
+                mGameDataChanged = true;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        //Listen for Text Changes to Game Supplier Email
+        mSupplierEmailEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(mSupplierEmailEditText.getText().toString().trim().isEmpty()) {
+                    emailSupplied = false;
+                } else {
+                    emailSupplied = true;
+                }
+                mGameDataChanged = true;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        //Listen for Text Changes to Game Barcode
+        mBarcodeEditText.addTextChangedListener(mTextWatcher);
     }
 
     /*
@@ -169,9 +247,6 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             LoaderManager loaderManager = getLoaderManager();
             loaderManager.initLoader(SCAN_LOADER_ID, null, this);
         }
-
-
-
     }
 
     /*
@@ -218,43 +293,36 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
        Set up the TextChangeListener for Barcode to validate if length is correct
      */
     private void initViews() {
-        mGameNameEditText = findViewById(R.id.inventory_item_add_edit_text);
+        soldOutText = findViewById(R.id.sold_out);
+        mGameNameEditText = findViewById(R.id.game_name_edit_text);
         mGamePriceEditText = findViewById(R.id.game_price_edit_text);
         mGamePriceEditText.addTextChangedListener(new NumberTextWatcher(mGamePriceEditText, "##.##"));
-        mBarcodeEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable text) {
-                mBarcodeEditText.removeTextChangedListener(this);
-                if (text !=null && !text.toString().isEmpty()) {
-                    int stringLength;
-                    stringLength = mBarcodeEditText.getText().length();
-                    if (stringLength == 12) {
-                        getDataRefresh();
-                    }
-                }
-                mBarcodeEditText.addTextChangedListener(this);
-            }
-        });
-        mQuantityEditText = findViewById(R.id.inventory_quantity_edit_text);
+        mQuantityEditText = findViewById(R.id.game_quantity_edit_text);
         mQuantityIncrease = findViewById(R.id.inventory_qty_add);
         mQuantityIncrease.setOnClickListener(this);
         mQuantityDecrease = findViewById(R.id.inventory_qty_minus);
         mQuantityDecrease.setOnClickListener(this);
-        mConditionRadioGroup = findViewById(R.id.condition_radio_group);
-        mConditionPoor = findViewById(R.id.condition_poor);
-        mConditionGood = findViewById(R.id.condition_good);
-        mConditionGreat = findViewById(R.id.condition_great);
         mSystemSpinner = findViewById(R.id.inventory_system_spinner);
+        mGameNameLayout = findViewById(R.id.game_name_layout);
+        mGamePriceLayout = findViewById(R.id.game_price_layout);
+        mQuantityLayout = findViewById(R.id.game_quantity_layout);
+        mSupplierEmailEditText = findViewById(R.id.supplier_email_entry);
+        mSupplierEmailLayout = findViewById(R.id.supplier_email_layout);
+        mSupplierNameEditText = findViewById(R.id.supplier_name_entry);
+        mSupplierNameLayout = findViewById(R.id.supplier_name_layout);
+        mSupplierPhoneEditText = findViewById(R.id.supplier_phone_entry);
+        mSupplierPhoneLayout = findViewById(R.id.supplier_phone_layout);
+        fabMenuClicker = findViewById(R.id.fab_menu);
+        fabCallClicker = findViewById(R.id.call_supplier_fab);
+        fabEmailClicker = findViewById(R.id.email_supplier_fab);
+        fabCallLayout = findViewById(R.id.call_supplier);
+        fabEmailLayout = findViewById(R.id.email_supplier);
+        fabCallText = findViewById(R.id.call_supplier_text);
+        fabEmailText = findViewById(R.id.email_supplier_text);
+        fabMenuClicker.setOnClickListener(this);
+        fabEmailClicker.setOnClickListener(this);
+        fabCallClicker.setOnClickListener(this);
+        animationFadeIn = AnimationUtils.loadAnimation(this, R.anim.fadein);
 
     }
 
@@ -267,58 +335,76 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         String gameQuantity = mQuantityEditText.getText().toString().trim();
         String currentGameName = mGameNameEditText.getText().toString().toUpperCase().trim();
         if(mGameNameEditText.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Must enter a valid title...", Toast.LENGTH_SHORT).show();
+            mGameNameLayout.setError("Must have a game name");
+            validGameName = false;
         } else {
             validGameName = true;
         }
-
         //Validate pricing & format
         String[] currentSalePrice = mGamePriceEditText.getText().toString().split("$");
         String finalPrice = currentSalePrice[0].trim();
         String pricingPattern = "\\$\\d{1,6}\\.\\d{2}";
-        if (mGamePriceEditText.getText().toString().trim().equalsIgnoreCase("")) {
-            mGamePriceEditText.setError("Cannot be blank");
-        } else if (!String.valueOf(finalPrice).matches(pricingPattern)) {
-            mGamePriceEditText.setError("Must be valid price format");
-        } else {
-            //mSuggestedPrice = getSuggestedPrice(mGamePriceEditText.getText().toString());
+        if (mGamePriceEditText.getText().toString().trim().equalsIgnoreCase("") || mGamePriceEditText.getText().toString().isEmpty()) {
+            mGamePriceLayout.setError("Price cannot be blank");
+            validGamePrice = false;
+        } else if (!String.valueOf(mGamePriceEditText.getText().toString().trim()).matches(pricingPattern)) {
+            gamePrice = gamePrice + ".00";
+            validGamePrice = true;
+        } else if (String.valueOf(mGamePriceEditText.getText().toString().trim()).equals("$0.00")){
+            mGamePriceLayout.setError("Price cannot be $0.00");
+            validGamePrice = false;
+        }else {
             validGamePrice = true;
         }
-
         //Checks for valid system selection
         if (mSystem == InventoryContract.InventoryEntry.SYSTEM_UNKNOWN) {
-            Toast.makeText(this, "Please select a valid Game System", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.valid_system, Toast.LENGTH_SHORT).show();
         }
-
         //Checks for valid quantity
-        int quantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
+        if (mQuantityEditText.getText().toString().trim().equals("") || mQuantityEditText.getText().toString().isEmpty()) {
+            mQuantityLayout.setError(getString(R.string.cant_be_blank));
+            validGameQuantity = false;
+        } else {
+            int quantity = Integer.parseInt(mQuantityEditText.getText().toString().trim());
+            if (quantity == 0){
+                mQuantityLayout.setError(getString(R.string.now_sold_out));
+                validGameQuantity = true;
+            } else {
+                validGameQuantity = true;
+            }
+        }
         if (mQuantityEditText.getText().toString().trim().isEmpty()) {
             Toast.makeText(this, R.string.must_have_qty, Toast.LENGTH_SHORT).show();
-        } else if (mQuantityEditText.getText().toString().equals("0")){
-            deleteRecord();
+            validGameQuantity = false;
+        }
+        //Check for Valid Supplier
+        if(mSupplierNameEditText.getText().toString().trim().isEmpty()) {
+            mSupplierNameLayout.setError(getString(R.string.provide_a_supplier));
+            validSupplier = false;
         } else {
-            validGameQuantity = true;
+            validSupplier = true;
         }
 
-        //Checks for valid game condition
-        if (!mConditionGood.isChecked() && !mConditionPoor.isChecked() && !mConditionGreat.isChecked()) {
-            Toast.makeText(this, "Game condition must be selected", Toast.LENGTH_SHORT).show();
+        //Check for valid Supplier Contact Details
+        if(mSupplierPhoneEditText.getText().toString().trim().isEmpty() && mSupplierEmailEditText.getText().toString().trim().isEmpty()) {
+            mSupplierPhoneLayout.setError(getString(R.string.must_have_phone_or_email));
+            mSupplierEmailLayout.setError(getString(R.string.must_have_phone_or_email));
+            validSupplierPhoneEmail = false;
         } else {
-            switch (mConditionRadioGroup.getCheckedRadioButtonId()) {
-                case R.id.condition_good:
-                    mConditionSelected = "GOOD";
-                case R.id.condition_poor:
-                    mConditionSelected = "POOR";
-                case R.id.condition_great:
-                    mConditionSelected = "GREAT";
+            if(mSupplierPhoneEditText.getText().toString().trim().isEmpty()) {
+                emailSupplied = true;
+            } else {
+                phoneSupplied = true;
             }
-            validGameCondition = true;
+            validSupplierPhoneEmail = true;
         }
 
         //Checks for all valid data
-        if(validGameName && validGamePrice && validGameQuantity && validGameCondition) {
+        if(validGameName && validGamePrice && validGameQuantity && validSupplier && validSupplierPhoneEmail) {
             mSuggestedPrice = getSuggestedPrice(mGamePriceEditText.getText().toString().trim());
             allValidData = true;
+        } else {
+            allValidData = false;
         }
 
         /*
@@ -331,8 +417,10 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             values.put(InventoryContract.InventoryEntry.GAME_SYSTEM, mSystem);
             values.put(InventoryContract.InventoryEntry.GAME_QUANTITY, gameQuantity);
             values.put(InventoryContract.InventoryEntry.GAME_SUGGESTED_PRICE,mSuggestedPrice);
-            values.put(InventoryContract.InventoryEntry.GAME_CONDITION, mConditionSelected);
             values.put(InventoryContract.InventoryEntry.GAME_UPC_CODE, mBarcodeEditText.getText().toString().trim());
+            values.put(InventoryContract.InventoryEntry.GAME_SUPPLIER, mSupplierNameEditText.getText().toString().trim());
+            values.put(InventoryContract.InventoryEntry.GAME_SUPPLIER_CONTACT, mSupplierPhoneEditText.getText().toString().trim());
+            values.put(InventoryContract.InventoryEntry.GAME_SUPPLIER_EMAIL, mSupplierEmailEditText.getText().toString().trim());
 
             //Insert item into database through ContentProvider
             if (mCurrentGameUri == null) {
@@ -346,11 +434,13 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 int rowsUpdated = getContentResolver().update(mCurrentGameUri, values,null, null);
                 //Show message depending on if rows were updated
                 if (rowsUpdated == 0) {
-                    Toast.makeText(this, "Error updating Game Details", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.to_err_is_human, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Successfully updated Game Details", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.success_is_not_guaranteed, Toast.LENGTH_SHORT).show();
                 }
             }
+        } else {
+            Toast.makeText(this, R.string.yah_missed_sumfin, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -374,6 +464,96 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         }
     }
 
+    public void showFABMenu() {
+        isFabOpen = true;
+        //On menu open - make layouts visible
+        fabCallLayout.setVisibility(VISIBLE);
+        fabEmailLayout.setVisibility(VISIBLE);
+        fabMenuClicker.animate().rotationBy(315);
+        fabCallLayout.animate().translationY(-getResources().getDimension(R.dimen.standard_140));
+        fabEmailLayout.animate().translationY(-getResources().getDimension(R.dimen.standard_70))
+                .setListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        if(!phoneSupplied) {
+                            fabCallClicker.setBackgroundColor(getResources().getColor(R.color.colorAccentFadeOut));
+                            fabCallClicker.setImageResource(R.drawable.ic_blocked_phone);
+                            fabCallText.setText(R.string.supplier_phone_unav);
+                            fabCallClicker.setClickable(false);
+                        } else {
+                            fabCallClicker.setImageResource(R.drawable.ic_phone);
+                            fabCallText.setText(R.string.call_supplier);
+                            fabCallClicker.setClickable(true);
+                        }
+                        if(!emailSupplied) {
+                            fabEmailClicker.setBackgroundColor(getResources().getColor(R.color.colorAccentFadeOut));
+                            fabEmailClicker.setImageResource(R.drawable.ic_blocked_email);
+                            fabEmailText.setText(R.string.supplier_email_unav);
+                            fabEmailClicker.setClickable(false);
+                        } else {
+                            fabEmailClicker.setImageResource(R.drawable.ic_email);
+                            fabEmailText.setText(R.string.email_supplier);
+                            fabEmailClicker.setClickable(true);
+                        }
+                        fabEmailText.setVisibility(View.INVISIBLE);
+                        fabCallText.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        fabCallText.setAnimation(animationFadeIn);
+                        fabEmailText.setAnimation(animationFadeIn);
+                        fabCallText.setVisibility(VISIBLE);
+                        fabEmailText.setVisibility(VISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                }
+        );
+    }
+    public void hideFABMenu() {
+        isFabOpen = false;
+        //Animate FABS back to standard
+        fabMenuClicker.animate().rotationBy(-315);
+        fabCallLayout.animate().translationY(0);
+        fabEmailLayout.animate().translationY(0).setListener(
+                new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        fabEmailText.setVisibility(View.INVISIBLE);
+                        fabCallText.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        if(!isFabOpen) {
+                            fabCallLayout.setVisibility(View.INVISIBLE);
+                            fabEmailLayout.setVisibility(View.INVISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                }
+        );
+
+    }
+
     //Create Menu Options
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -389,8 +569,6 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         if (mCurrentGameUri == null) {
             MenuItem menuItem;
             menuItem = menu.findItem(R.id.action_delete);
-            menuItem.setVisible(false);
-            menuItem = menu.findItem(R.id.other_details);
             menuItem.setVisible(false);
         }
         return true;
@@ -409,19 +587,18 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
             case R.id.action_delete:
                 deleteRecord();
                 return true;
-            case R.id.other_details:
-                if (!mGameDataChanged) {
-                    seeMoreDetails();
-                } else {
-                    showUnsavedChangesDialog();
-                }
-                return true;
             case R.id.home:
                 if(!mGameDataChanged) {
-                    NavUtils.navigateUpFromSameTask(AddActivity.this);
+                    NavUtils.navigateUpFromSameTask(this);
                     return true;
                 } else {
-                    showUnsavedChangesDialog();
+                    DialogInterface.OnClickListener discardChanges = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            NavUtils.navigateUpFromSameTask(AddActivity.this);
+                        }
+                    };
+                    showDialogInterface(discardChanges);
                     return true;
                 }
         }
@@ -433,20 +610,22 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         if (!mGameDataChanged) {
             super.onBackPressed();
             return;
+        } else {
+            DialogInterface.OnClickListener discardChanges = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            };
+            showDialogInterface(discardChanges);
         }
-        showUnsavedChangesDialog();
     }
 
-    private void showUnsavedChangesDialog() {
+    private void showDialogInterface(DialogInterface.OnClickListener discardChangesDialog) {
         // Create an AlertDialog.Builder to verify if user wants to keep editing or delete changes
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.unsaved_changes_are_you_sure);
-        builder.setPositiveButton(R.string.trash_them, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                NavUtils.navigateUpFromSameTask(AddActivity.this);
-            }
-        });
+        builder.setPositiveButton(R.string.trash_them, discardChangesDialog);
         builder.setNegativeButton(R.string.keep_them, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
@@ -495,12 +674,6 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         finish();
     }
 
-    private void seeMoreDetails() {
-        Intent detailsIntent = new Intent(AddActivity.this, DisplayDetailsActivity.class);
-        detailsIntent.setData(mCurrentGameUri);
-        startActivity(detailsIntent);
-    }
-
     /*
     * Increase quantity on hand and validate that quantity does not equal zero or above 1000
     */
@@ -528,6 +701,9 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         currentQuantity = Integer.parseInt(currentValue);
         if (currentQuantity == 1) {
             Toast.makeText(this, R.string.quantity_zero, Toast.LENGTH_SHORT).show();
+            soldOutText.setVisibility(VISIBLE);
+        } else {
+            soldOutText.setVisibility(View.INVISIBLE);
         }
         currentQuantity = currentQuantity - 1;
         return String.valueOf(currentQuantity);
@@ -550,8 +726,10 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                     InventoryContract.InventoryEntry.GAME_QUANTITY,
                     InventoryContract.InventoryEntry.GAME_SALE_PRICE,
                     InventoryContract.InventoryEntry.GAME_SUGGESTED_PRICE,
-                    InventoryContract.InventoryEntry.GAME_CONDITION,
-                    InventoryContract.InventoryEntry.GAME_UPC_CODE};
+                    InventoryContract.InventoryEntry.GAME_UPC_CODE,
+                    InventoryContract.InventoryEntry.GAME_SUPPLIER,
+                    InventoryContract.InventoryEntry.GAME_SUPPLIER_CONTACT,
+                    InventoryContract.InventoryEntry.GAME_SUPPLIER_EMAIL};
             return new CursorLoader(this, mCurrentGameUri, projection, null, null, null);
         }
         return null;
@@ -599,10 +777,14 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                         InventoryContract.InventoryEntry.GAME_QUANTITY);
                 int gamePriceColumnIndex = cursorData.getColumnIndex(
                         InventoryContract.InventoryEntry.GAME_SALE_PRICE);
-                int gameConditionColumnIndex = cursorData.getColumnIndex(
-                        InventoryContract.InventoryEntry.GAME_CONDITION);
                 int gameUPCColumnIndex = cursorData.getColumnIndex(
                         InventoryContract.InventoryEntry.GAME_UPC_CODE);
+                int gameSupplierIndex = cursorData.getColumnIndex(
+                        InventoryContract.InventoryEntry.GAME_SUPPLIER);
+                int gameSupplierPhoneIndex = cursorData.getColumnIndex(
+                        InventoryContract.InventoryEntry.GAME_SUPPLIER_CONTACT);
+                int gameSupplierEmailIndex = cursorData.getColumnIndex(
+                        InventoryContract.InventoryEntry.GAME_SUPPLIER_EMAIL);
 
                 String gameName = cursorData.getString(gameNameColumnIndex);
                 mGameNameEditText.setText(gameName);
@@ -628,18 +810,22 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 mQuantityEditText.setText(gameQuantity);
                 String gamePrice = cursorData.getString(gamePriceColumnIndex);
                 mGamePriceEditText.setText(gamePrice);
-
-                String gameCondition = cursorData.getString(gameConditionColumnIndex);
-                switch (gameCondition) {
-                    case "GOOD":
-                        mConditionGood.setChecked(true);
-                    case "POOR":
-                        mConditionPoor.setChecked(true);
-                    case "GREAT":
-                        mConditionGreat.setChecked(true);
-                }
                 String gameUPC = cursorData.getString(gameUPCColumnIndex);
                 mBarcodeEditText.setText(gameUPC);
+                String gameSupplier = cursorData.getString(gameSupplierIndex);
+                mSupplierNameEditText.setText(gameSupplier);
+                String gameSupplierPhone = cursorData.getString(gameSupplierPhoneIndex);
+                if (gameSupplierPhone.equals("null")){
+                    mSupplierPhoneEditText.setText("");
+                } else {
+                    mSupplierPhoneEditText.setText(gameSupplierPhone);
+                }
+                String gameSupplieEmail = cursorData.getString(gameSupplierEmailIndex);
+                if (gameSupplieEmail.equals("null")) {
+                    mSupplierEmailEditText.setText("");
+                } else {
+                    mSupplierEmailEditText.setText(gameSupplieEmail);
+                }
             }
         }
 
@@ -654,9 +840,15 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
         switch(v.getId()) {
             case R.id.inventory_qty_add:
                 mQuantityEditText.setText(increaseQuantity());
+                soldOutText.setVisibility(View.INVISIBLE);
                 break;
             case R.id.inventory_qty_minus:
-                mQuantityEditText.setText(decreaseQuantity());
+                if(Integer.parseInt(mQuantityEditText.getText().toString()) == 0) {
+                    Toast.makeText(this, "Cannot have a negative quantity on-hand", Toast.LENGTH_SHORT).show();
+                    soldOutText.setVisibility(VISIBLE);
+                } else {
+                    mQuantityEditText.setText(decreaseQuantity());
+                }
                 break;
             case R.id.scan_barcode_button:
                 if (!isNetworkAvailable()) {
@@ -666,6 +858,36 @@ public class AddActivity extends AppCompatActivity implements View.OnClickListen
                 } else {
                     IntentIntegrator scanIntegration = new IntentIntegrator(this);
                     scanIntegration.initiateScan();
+                }
+                break;
+            case R.id.fab_menu:
+                if(!isFabOpen) {
+                    showFABMenu();
+                } else {
+                    hideFABMenu();
+                }
+                break;
+            case R.id.call_supplier_fab:
+                if(isFabOpen) {
+                    hideFABMenu();
+                    if (phoneSupplied) {
+                        Intent callSupplierForMore = new Intent(Intent.ACTION_DIAL);
+                        String uri = "tel:" + mSupplierPhoneEditText.getText().toString().trim();
+                        callSupplierForMore.setData(Uri.parse(uri));
+                        startActivity(callSupplierForMore);
+                    }
+                }
+                break;
+            case R.id.email_supplier_fab:
+                if(isFabOpen) {
+                    hideFABMenu();
+                    if(emailSupplied) {
+                        Intent emailSupplierForMore = new Intent(Intent.ACTION_SEND);
+                        emailSupplierForMore.setType("text/html");
+                        emailSupplierForMore.putExtra(Intent.EXTRA_EMAIL, mSupplierEmailEditText.getText().toString());
+                        emailSupplierForMore.putExtra(Intent.EXTRA_SUBJECT, "Order More: " + mGameNameEditText.getText().toString().trim());
+                        startActivity(Intent.createChooser(emailSupplierForMore, "Send Email"));
+                    }
                 }
                 break;
         }

@@ -24,10 +24,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.thebaileybrew.nowloading.customobjects.RecyclerItemTouchHelpListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.thebaileybrew.nowloading.database.InventoryContract;
 import com.thebaileybrew.nowloading.database.InventoryCursorAdapter;
-import com.thebaileybrew.nowloading.interfaces.RecyclerItemTouchListener;
 import com.thebaileybrew.nowloading.interfaces.onClickInterface;
 
 
@@ -95,7 +94,9 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
             InventoryContract.InventoryEntry.GAME_QUANTITY,
             InventoryContract.InventoryEntry.GAME_SALE_PRICE,
             InventoryContract.InventoryEntry.GAME_SUGGESTED_PRICE,
-            InventoryContract.InventoryEntry.GAME_CONDITION};
+            InventoryContract.InventoryEntry.GAME_SUPPLIER,
+            InventoryContract.InventoryEntry.GAME_SUPPLIER_CONTACT,
+            InventoryContract.InventoryEntry.GAME_SUPPLIER_EMAIL};
         cursor = getContentResolver().query(
                 InventoryContract.InventoryEntry.CONTENT_URI, projection,
                 null, null, null, null);
@@ -138,72 +139,62 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
         inventoryCursorAdapter = new InventoryCursorAdapter(this, cursor, new onClickInterface() {
             //Defines what happens on item click
             @Override
-            public void onItemClick(View v, int position) {
-                final Uri currentGame = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, position);
-                Intent updateIntent = new Intent(CatalogActivity.this, AddActivity.class);
-                updateIntent.setData(currentGame);
-                startActivity(updateIntent);
+            public void onItemClick(View v, int position, int quantity) {
+                ContentValues values = new ContentValues();
+                final Uri currentGame = ContentUris.withAppendedId(
+                        InventoryContract.InventoryEntry.CONTENT_URI, position);
+                if (quantity == 0) {
+                    Toast.makeText(CatalogActivity.this,
+                            "You can't sell what you don't have...", Toast.LENGTH_SHORT).show();
+                } else if (quantity == 1) {
+                    int newQuantity = quantity - 1;
+                    values.put(InventoryContract.InventoryEntry.GAME_QUANTITY, newQuantity);
+                    int rowsUpdated = getContentResolver().update(
+                            currentGame, values, null, null);
+                    if (rowsUpdated != 0) {
+                        Toast.makeText(CatalogActivity.this,
+                                "Qty updated", Toast.LENGTH_SHORT).show();
+                    }
+                    inventoryCursorAdapter.notifyDataSetChanged();
+                    Snackbar buyMoreSnackBar = Snackbar.make(coordinatorLayout,
+                            "Selling Last - Order More?", Snackbar.LENGTH_LONG)
+                            .setAction("YES", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Intent updateIntent = new Intent(CatalogActivity.this, AddActivity.class);
+                                    updateIntent.setData(currentGame);
+                                    startActivity(updateIntent);
+                                }
+                            });
+                    buyMoreSnackBar.show();
+                    displayDatabaseDetails();
+                } else {
+                    int newQuantity = quantity - 1;
+                    values.put(InventoryContract.InventoryEntry.GAME_QUANTITY, newQuantity);
+                    int rowsUpdated = getContentResolver().update(
+                            currentGame, values,null,null);
+                    if (rowsUpdated != 0) {
+                        Toast.makeText(CatalogActivity.this,
+                                "Qty updated", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CatalogActivity.this,
+                                "Button belongs to: " + position, Toast.LENGTH_SHORT).show();
+                    }
+                    inventoryCursorAdapter.notifyDataSetChanged();
+                    displayDatabaseDetails();
+                }
+
             }
             //Defines what happens on long click
             @Override
             public void onLongClick(View v, int position) {
                 showOnLongClickDialog(position);
-            }});
+            }
+
+        });
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setStackFromEnd(true);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(inventoryCursorAdapter);
-        //Set the swipe functionality for LEFT and RIGHT
-        ItemTouchHelper.SimpleCallback leftTouchCallBack = new RecyclerItemTouchHelpListener(
-                0, ItemTouchHelper.LEFT, new RecyclerItemTouchListener() {
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                String position = (String) viewHolder.itemView.getTag(InventoryCursorAdapter.CURRENT_ROW_ID);
-                String quantity = (String) viewHolder.itemView.getTag(InventoryCursorAdapter.CURRENT_QTY_ID);
-                Long currentID = Long.parseLong(position);
-                Uri onSwipeURI = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI,currentID);
-                int newQuantity = Integer.parseInt(quantity) - 1;
-                if (newQuantity == 0) {
-                    int rowsDeleted = getContentResolver().delete(onSwipeURI, null, null);
-                    if (rowsDeleted != 0) {
-                        Toast.makeText(CatalogActivity.this, "Item deleted", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    ContentValues values = new ContentValues();
-                    values.put(InventoryContract.InventoryEntry.GAME_QUANTITY, newQuantity);
-                    int rowsUpdated = getContentResolver().update(onSwipeURI,values,null,null);
-                    if (rowsUpdated != 0) {
-                        Toast.makeText(CatalogActivity.this, "Qty updated", Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-                inventoryCursorAdapter.notifyDataSetChanged();
-                displayDatabaseDetails();
-            }
-        });
-        ItemTouchHelper.SimpleCallback rightTouchCallBack = new RecyclerItemTouchHelpListener(
-                0, ItemTouchHelper.RIGHT, new RecyclerItemTouchListener() {
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                String position = (String) viewHolder.itemView.getTag(InventoryCursorAdapter.CURRENT_ROW_ID);
-                String quantity = (String) viewHolder.itemView.getTag(InventoryCursorAdapter.CURRENT_QTY_ID);
-                Long currentID = Long.parseLong(position);
-                Uri onSwipeURI = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI,currentID);
-                int newQuantity = Integer.parseInt(quantity) + 1;
-                //Declare the new ContentValues, Update the DB & refresh the view
-                ContentValues values = new ContentValues();
-                values.put(InventoryContract.InventoryEntry.GAME_QUANTITY, newQuantity);
-                int rowsUpdated = getContentResolver().update(onSwipeURI,values,null,null);
-                if (rowsUpdated != 0) {
-                    Toast.makeText(CatalogActivity.this, "Qty updated", Toast.LENGTH_SHORT).show();
-                }
-                inventoryCursorAdapter.notifyDataSetChanged();
-                displayDatabaseDetails();
-            }
-        });
-        new ItemTouchHelper(leftTouchCallBack).attachToRecyclerView(recyclerView);
-        new ItemTouchHelper(rightTouchCallBack).attachToRecyclerView(recyclerView);
-
         //Run the animation loader
         runLayoutAnimation(recyclerView);
     }
@@ -414,33 +405,20 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
         int selection4 = r4.nextInt(12 - 1) + 1;
         int selection5 = r5.nextInt(12 - 1) + 1;
         int selection6 = r6.nextInt(12 - 1) + 1;
-        String gameCondition = "";
-        switch (selection2) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-                gameCondition = String.valueOf(R.string.condition_good); break;
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-                gameCondition = String.valueOf(R.string.condition_great); break;
-            case 8:
-            case 9:
-            case 10:
-            case 11:
-                gameCondition = String.valueOf(R.string.condition_poor); break;
-        }
+        String gameSupplierName = "Amazon.com";
+        String gameSupplierPhone = "1-888-280-4331";
+        String gameSupplierEmail = "amazon_help@amazon.com";
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InventoryEntry.GAME_NAME, gameNames[selection2].toUpperCase());
         values.put(InventoryContract.InventoryEntry.GAME_SALE_PRICE, gamePrices[selection3]);
         values.put(InventoryContract.InventoryEntry.GAME_SYSTEM, gameSystems[selection5]);
         values.put(InventoryContract.InventoryEntry.GAME_QUANTITY, selection4);
         values.put(InventoryContract.InventoryEntry.GAME_SUGGESTED_PRICE,gamePrices[selection6]);
-        values.put(InventoryContract.InventoryEntry.GAME_CONDITION, gameCondition);
-
-        Uri blankUri = getContentResolver().insert(InventoryContract.InventoryEntry.CONTENT_URI, values);
+        values.put(InventoryContract.InventoryEntry.GAME_SUPPLIER, gameSupplierName);
+        values.put(InventoryContract.InventoryEntry.GAME_SUPPLIER_EMAIL, gameSupplierEmail);
+        values.put(InventoryContract.InventoryEntry.GAME_SUPPLIER_CONTACT, gameSupplierPhone);
+        //Insert data and update recycler
+        getContentResolver().insert(InventoryContract.InventoryEntry.CONTENT_URI, values);
         recyclerView.getAdapter().notifyDataSetChanged();
         displayDatabaseDetails();
     }
@@ -483,25 +461,17 @@ public class CatalogActivity extends AppCompatActivity implements View.OnClickLi
         longClickBuilder.setPositiveButton("Update It", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                fabMenu.setAnimation(animationFadeOutQuick);
                 Intent updateIntent = new Intent(CatalogActivity.this, AddActivity.class);
                 updateIntent.setData(currentGame);
                 startActivity(updateIntent);
             }
         });
-        longClickBuilder.setNegativeButton("Delete This", new DialogInterface.OnClickListener() {
+        longClickBuilder.setNeutralButton("Delete this item", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 getContentResolver().delete(currentGame,null,null);
                 displayDatabaseDetails();
-            }
-        });
-        longClickBuilder.setNeutralButton("See Details", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent detailsIntent = new Intent(CatalogActivity.this, DisplayDetailsActivity.class);
-                detailsIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                detailsIntent.setData(currentGame);
-                startActivity(detailsIntent);
             }
         });
         AlertDialog longClick = longClickBuilder.create();

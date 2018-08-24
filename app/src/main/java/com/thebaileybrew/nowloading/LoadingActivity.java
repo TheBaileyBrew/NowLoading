@@ -1,16 +1,12 @@
 package com.thebaileybrew.nowloading;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Handler;
 import android.os.Bundle;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.thebaileybrew.nowloading.database.InventoryContract;
-import com.thebaileybrew.nowloading.queryelements.gamesquery.QueryGameUtils;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -41,31 +37,6 @@ public class LoadingActivity extends AppCompatActivity {
         in2 = AnimationUtils.loadAnimation(this,R.anim.fadein);
         in3 = AnimationUtils.loadAnimation(this,R.anim.fadein);
         in4 = AnimationUtils.loadAnimation(this,R.anim.fadein);
-        final Handler checkDBHandler = new Handler();
-        Runnable checkForDB = new Runnable() {
-            @Override
-            public void run() {
-                Cursor mCursor = getContentResolver().query(InventoryContract.GameEntry.CONTENT_URI,
-                        null, null,null,null,null);
-                Boolean rowExists = false;
-                if (mCursor != null) {
-                    if (mCursor.moveToFirst()) {
-                        mCursor.close();
-                        rowExists = true;
-                        Toast.makeText(LoadingActivity.this, "Table exists already", Toast.LENGTH_SHORT).show();
-                    } else {
-                        mCursor.close();
-                        rowExists = false;
-                    }
-                }
-                if (!rowExists) {
-                    String jsonData = QueryGameUtils.loadJSONFromAsset(LoadingActivity.this);
-                    QueryGameUtils.extractDataFromJson(jsonData, LoadingActivity.this);
-                }
-            }
-        };
-        checkDBHandler.postDelayed(checkForDB, 200);
-
         startLoaders();
     }
 

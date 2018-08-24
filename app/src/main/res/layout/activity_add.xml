@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_gravity="center"
     android:padding="50dp">
 
@@ -45,7 +46,7 @@
     </android.support.constraint.ConstraintLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/inventory_item_parent"
+        android:id="@+id/game_name_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
@@ -54,9 +55,11 @@
         app:layout_constraintTop_toTopOf="parent"
         android:hint="@string/enter_a_game_name">
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/inventory_item_add_edit_text"
+            android:id="@+id/game_name_edit_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/small_text_16sp"
+            tools:text="Game Name Here"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <Spinner
@@ -64,7 +67,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/small_padding_8dp"
-        app:layout_constraintTop_toBottomOf="@id/inventory_item_parent"
+        app:layout_constraintTop_toBottomOf="@id/game_name_layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -78,14 +81,22 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         >
-        <EditText
-            android:id="@+id/inventory_quantity_edit_text"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/game_quantity_layout"
             android:layout_width="0dp"
             android:layout_weight="4"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="@string/enter_a_quantity"
-            />
+            android:layout_height="match_parent"
+            android:hint="@string/enter_a_quantity">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/game_quantity_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:inputType="number"
+                android:textSize="@dimen/small_text_16sp"
+                tools:text="12"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
         <Button
             android:id="@+id/inventory_qty_add"
             android:layout_width="0dp"
@@ -125,6 +136,7 @@
         android:orientation="horizontal"
         android:baselineAligned="false">
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/game_price_layout"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -136,38 +148,155 @@
                 android:id="@+id/game_price_edit_text"
                 android:inputType="numberDecimal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/small_text_16sp"
+                tools:text="Purchase Price Here"/>
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
-    <RadioGroup
-        android:id="@+id/condition_radio_group"
+    <View
+        android:id="@+id/details_break"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/small_padding_8dp"
-        app:layout_constraintTop_toBottomOf="@id/pricing_details"
+        android:layout_margin="4dp"
+        android:layout_height="2dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:gravity="center_horizontal"
-        android:orientation="horizontal">
-        <RadioButton
-            android:id="@+id/condition_poor"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+        app:layout_constraintTop_toBottomOf="@id/pricing_details"
+        android:background="@color/colorPrimaryDark"/>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/supplier_name_layout"
+        app:layout_constraintTop_toBottomOf="@id/details_break"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="@dimen/med_margin_8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Supplier Name">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/supplier_name_entry"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/poor"/>
-        <RadioButton
-            android:id="@+id/condition_good"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:textSize="@dimen/small_text_16sp"
+            tools:text="Supplier Name Here"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/supplier_phone_layout"
+        app:layout_constraintTop_toBottomOf="@id/supplier_name_layout"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="@dimen/med_margin_8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_phone">
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/supplier_phone_entry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/small_text_16sp"
+        android:inputType="phone"
+        tools:text="Supplier Contact Number Here"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/supplier_email_layout"
+        app:layout_constraintTop_toBottomOf="@id/supplier_phone_layout"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="@dimen/med_margin_8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_email">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/supplier_email_entry"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/good"/>
-        <RadioButton
-            android:id="@+id/condition_great"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:textSize="@dimen/small_text_16sp"
+            android:inputType="text"
+            tools:text="Supplier Contact Email Here"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/sold_out"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/supplier_email_layout"
+        android:layout_marginTop="@dimen/margin_large_44"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:textColor="@color/colorAccentRed"
+        android:textSize="36sp"
+        android:text="@string/thats_sold_out"/>
+
+    <LinearLayout
+        android:id="@+id/call_supplier"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/standard_75_dimen"
+        android:visibility="gone"
+        android:gravity="center_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <TextView
+            android:id="@+id/call_supplier_text"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/great"/>
-    </RadioGroup>
+            android:layout_marginEnd="@dimen/med_margin_8dp"
+            android:layout_gravity="center_vertical"
+            android:textSize="@dimen/small_text_20sp"
+            android:textColor="@android:color/black"
+            android:text="@string/call_supplier"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/call_supplier_fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:elevation="1dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_phone"
+            app:fabSize="normal"
+            android:scaleType="fitXY"
+            app:rippleColor="@color/colorAccent"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/email_supplier"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/standard_75_dimen"
+        android:visibility="gone"
+        android:gravity="center_vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <TextView
+            android:id="@+id/email_supplier_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/med_margin_8dp"
+            android:layout_gravity="center_vertical"
+            android:textSize="@dimen/small_text_20sp"
+            android:textColor="@android:color/black"
+            android:text="@string/email_supplier"/>
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/email_supplier_fab"
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
+            android:elevation="1dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_email"
+            app:fabSize="normal"
+            android:scaleType="fitXY"
+            app:rippleColor="@color/colorAccent"/>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_menu"
+        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        android:elevation="1dp"
+        app:borderWidth="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:src="@drawable/ic_add"
+        app:fabSize="normal"
+        android:scaleType="fitXY"
+        app:rippleColor="@color/colorAccent" />
 
 </android.support.constraint.ConstraintLayout>

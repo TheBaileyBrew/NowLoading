@@ -16,9 +16,9 @@
     <string name="initial_load">Initial database load will take longer than sequential database loading. There is a lot of data to apply.</string>
     <string name="gaming_database_loading">GAMING DATABASE LOADING</string>
     <string name="adding_items">Add items by clicking the floating button in the lower right corner of your screen.</string>
-    <string name="click_to_update">Click any item in the list to update it directly.</string>
-    <string name="long_press_for_prompt">Long press on an item to view more details or delete when prompted.</string>
-    <string name="swipe_rules">Swiping an item to the left will sell one on-hand, to the right will add one.</string>
+    <string name="click_to_update">Click the sell button to quickly sell an in-stock item.</string>
+    <string name="long_press_for_prompt">Long press on an item to update or delete items in inventory</string>
+    <string name="swipe_rules">When editing an item, you can choose to call or email the supplier if contact info is available.</string>
     <string name="current_onhand">ON-HAND:</string>
     <string name="suggested_price">SUGGESTED SALE PRICE:</string>
     <string name="current_on_hand_title">Current Quantity On-Hand:</string>
@@ -41,7 +41,7 @@
     <string name="error_delete">Error deleting game details</string>
     <string name="success_delete">Game deleted successfully</string>
     <string name="that_escalated_quickly">Well that escalated quickly! 1000 is a lot…</string>
-    <string name="quantity_zero">Cannot have inventory of zero - item will be deleted on saving</string>
+    <string name="quantity_zero">Selling last on-hand</string>
     <string name="already_have_barcode">Barcode Already Exists - Scan Not Allowed</string>
     <string name="no_network">No Network Connection - Scan Not Allowed</string>
     <string name="must_have_qty">Must have a quantity</string>
@@ -58,4 +58,21 @@
     <string name="great">GREAT</string>
     <string name="there_are_no_games_in_the_database">There are no games in the database.</string>
     <string name="click_on_the_button_below_to_add_a_game">Click on the button below to add a game</string>
+    <string name="email_supplier">Email Supplier</string>
+    <string name="call_supplier">Call Supplier</string>
+    <string name="cant_be_blank">Quantity cannot be blank</string>
+    <string name="valid_system">Please select a valid game system</string>
+    <string name="now_sold_out">Item is now sold out</string>
+    <string name="provide_a_supplier">Must provide a supplier</string>
+    <string name="must_have_phone_or_email">Must have valid phone or email</string>
+    <string name="to_err_is_human">Error updating Game Details</string>
+    <string name="success_is_not_guaranteed">Successfully updated Game Details</string>
+    <string name="yah_missed_sumfin">Please check entry boxes, you\'re missing something...</string>
+    <string name="add_a_game">Add A Game</string>
+    <string name="update_a_game">Update This Game</string>
+    <string name="supplier_phone_unav">Supplier Phone Unavailable</string>
+    <string name="supplier_email_unav">Supplier Email Unavailable</string>
+    <string name="hint_phone">Supplier Phone Number</string>
+    <string name="hint_email">Supplier Email Address (optional)</string>
+    <string name="thats_sold_out">SOLD OUT</string>
 </resources>

@@ -14,7 +14,6 @@ public final class InventoryContract {
 
     //Path Providers
     public static final String PATH_INVENTORY = "inventorypath";
-    public static final String PATH_GAMES = "gamespath";
 
     //InventoryEntry Builder
     public static final class InventoryEntry implements BaseColumns {
@@ -26,8 +25,10 @@ public final class InventoryContract {
         public final static String GAME_QUANTITY = "quantity";
         public final static String GAME_SALE_PRICE = "saleprice";
         public final static String GAME_SUGGESTED_PRICE = "suggested";
-        public final static String GAME_CONDITION = "condition";
         public final static String GAME_UPC_CODE = "barcode";
+        public final static String GAME_SUPPLIER = "supplier";
+        public final static String GAME_SUPPLIER_CONTACT = "contact";
+        public final static String GAME_SUPPLIER_EMAIL = "email";
 
         //MIME Type
         public static final String CONTENT_LIST_TYPE =
@@ -50,26 +51,5 @@ public final class InventoryContract {
                     || system == SYSTEM_N3DS
                     || system == SYSTEM_NSWITCH;
         }
-    }
-
-    public static final class GameEntry implements BaseColumns {
-        public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_GAMES);
-        public final static String TABLE_NAME = "games";
-        public final static String _ID = BaseColumns._ID;
-        public final static String GAME_NAME = "game";
-        public final static String GAME_GENRE = "gamegenre";
-        public final static String GAME_SYSTEM = "gamesystem";
-        public final static String GAME_RELEASE_DATE = "gamerelease";
-        public final static String GAME_DEVELOPER = "devname";
-        public final static String GAME_DEV_ESTB = "devestablish";
-        public final static String GAME_DEV_HQ = "devhq";
-        public final static String GAME_DEV_COUNTRY = "devcountry";
-
-        //MIME types
-        public static final String CONTENT_LIST_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GAMES;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_GAMES;
-
     }
 }

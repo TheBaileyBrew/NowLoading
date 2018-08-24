@@ -79,7 +79,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/hardware/ic_gamepad_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/communication/ic_email_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -90,11 +90,9 @@
                         <option name="values">
                           <map>
                             <entry key="color" value="5b5b5b" />
-                            <entry key="height" value="124" />
-                            <entry key="outputName" value="ic_gamepad" />
+                            <entry key="outputName" value="ic_email" />
                             <entry key="overrideSize" value="true" />
                             <entry key="sourceFile" value="C:\Users\grumnb" />
-                            <entry key="width" value="124" />
                           </map>
                         </option>
                       </PersistentState>

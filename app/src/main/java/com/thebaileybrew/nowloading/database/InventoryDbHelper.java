@@ -8,13 +8,13 @@ class InventoryDbHelper extends SQLiteOpenHelper {
     public static final String TAG = InventoryDbHelper.class.getSimpleName();
 
     //Name of the Database
-    private static final String DATABASE_NAME = "nowloading.db";
+    private static final String DATABASE_NAME = "nowloadingdata.db";
 
     /*
     Version of current Database
        When Schema is changed - the version MUST be incremented
     */
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
 
     //Construct the new instance of the DB Helper
     public InventoryDbHelper(Context context) {
@@ -25,7 +25,6 @@ class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         addInventoryTable(db);
-        addGamesTable(db);
     }
 
     private void addInventoryTable(SQLiteDatabase db) {
@@ -36,37 +35,21 @@ class InventoryDbHelper extends SQLiteOpenHelper {
                 + InventoryContract.InventoryEntry.GAME_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
                 + InventoryContract.InventoryEntry.GAME_SALE_PRICE + " REAL, "
                 + InventoryContract.InventoryEntry.GAME_SUGGESTED_PRICE + " REAL, "
-                + InventoryContract.InventoryEntry.GAME_CONDITION + " TEXT, "
-                + InventoryContract.InventoryEntry.GAME_UPC_CODE + " TEXT);";
+                + InventoryContract.InventoryEntry.GAME_UPC_CODE + " TEXT, "
+                + InventoryContract.InventoryEntry.GAME_SUPPLIER + " TEXT NOT NULL, "
+                + InventoryContract.InventoryEntry.GAME_SUPPLIER_CONTACT + " TEXT, "
+                + InventoryContract.InventoryEntry.GAME_SUPPLIER_EMAIL + " TEXT);";
         db.execSQL(SQL_CREATE_INVENTORY_TABLE);
     }
-    private void addGamesTable(SQLiteDatabase db) {
-        String SQL_CREATE_GAME_TABLE = "CREATE TABLE " + InventoryContract.GameEntry.TABLE_NAME + " ("
-                + InventoryContract.GameEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + InventoryContract.GameEntry.GAME_NAME + " TEXT NOT NULL, "
-                + InventoryContract.GameEntry.GAME_GENRE + " TEXT, "
-                + InventoryContract.GameEntry.GAME_SYSTEM + " TEXT NOT NULL, "
-                + InventoryContract.GameEntry.GAME_RELEASE_DATE + " TEXT NOT NULL, "
-                + InventoryContract.GameEntry.GAME_DEVELOPER + " TEXT NOT NULL, "
-                + InventoryContract.GameEntry.GAME_DEV_COUNTRY + " TEXT, "
-                + InventoryContract.GameEntry.GAME_DEV_HQ + " TEXT, "
-                + InventoryContract.GameEntry.GAME_DEV_ESTB + " TEXT);";
-        db.execSQL(SQL_CREATE_GAME_TABLE);
-    }
+
 
     //Checks for updates to the DB Schema
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (newVersion > oldVersion) {
             dropInventoryTable(db);
-            dropGamesTable(db);
         }
         onCreate(db);
-    }
-
-    private void dropGamesTable(SQLiteDatabase db) {
-        String sql = "DROP TABLE IF EXISTS " + InventoryContract.GameEntry.TABLE_NAME;
-        db.execSQL(sql);
     }
 
     private void dropInventoryTable(SQLiteDatabase db) {

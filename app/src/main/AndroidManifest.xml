@@ -28,13 +28,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".CatalogActivity"/>
         </activity>
-        <activity android:name=".DisplayDetailsActivity"
-            android:label="Inventory Details"
-            android:parentActivityName=".CatalogActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".CatalogActivity"/>
-        </activity>
 
         <provider
             android:authorities="com.thebaileybrew.nowloading"
